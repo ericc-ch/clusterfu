@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/prettierrc",
+
+  "semi": false,
+  "plugins": ["prettier-plugin-tailwindcss"],
+
+  "experimentalOperatorPosition": "start",
+  "experimentalTernaries": true
+}

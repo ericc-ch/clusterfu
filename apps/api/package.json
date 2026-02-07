@@ -1,0 +1,31 @@
+{
+  "name": "api",
+  "version": "0.0.0",
+  "description": "A starter kit for a Vite + oRPC",
+  "type": "module",
+  "exports": {
+    "./env": "./src/lib/env.ts",
+    "./rpc": "./src/rpc/contract.ts"
+  },
+  "scripts": {
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@effect/platform": "catalog:effect",
+    "@effect/rpc": "catalog:effect",
+    "@effect/sql": "catalog:effect",
+    "@effect/sql-d1": "catalog:effect",
+    "@effect/sql-drizzle": "catalog:effect",
+    "better-auth": "catalog:better-auth",
+    "drizzle-orm": "catalog:drizzle",
+    "drizzle-zod": "catalog:drizzle",
+    "effect": "catalog:effect",
+    "shared": "workspace:*",
+    "zod": "catalog:default"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:cloudflare",
+    "@libsql/client": "catalog:default",
+    "@types/node": "catalog:default"
+  }
+}

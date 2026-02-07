@@ -1,0 +1,27 @@
+# npm
+node_modules/
+
+# wrangler
+.wrangler/
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
+
+# alchemy states
+.alchemy/
+
+# llm context
+.context/
+
+# typescript
+*.tsbuildinfo
+
+# frontend
+dist/
+.nitro/
+.output/
+.tanstack/
+*.gen.ts
+
+.opencode/

@@ -1,0 +1,46 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: ${{ github.ref_name }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --ignore-scripts
+
+      - name: Deploy
+        run: pnpm exec alchemy deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+          ALCHEMY_REMOTE_STATE: "true"
+          ALCHEMY_STAGE: ${{ github.ref_name }}
+          ALCHEMY_STATE_TOKEN: ${{ secrets.ALCHEMY_STATE_TOKEN }}
+          ALCHEMY_PASSWORD: ${{ secrets.ALCHEMY_PASSWORD }}
+
+          API_BETTER_AUTH_SECRET: ${{ secrets.API_BETTER_AUTH_SECRET }}
+          API_BETTER_AUTH_URL: ${{ vars.API_BETTER_AUTH_URL }}
+          API_CORS_ORIGIN: ${{ vars.API_CORS_ORIGIN }}
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+
+          WEB_DOMAIN: ${{ vars.WEB_DOMAIN }}
+          API_DOMAIN: ${{ vars.API_DOMAIN }}

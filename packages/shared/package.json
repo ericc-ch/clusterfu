@@ -1,0 +1,24 @@
+{
+  "name": "shared",
+  "version": "0.0.0",
+  "description": "A starter kit for a Vite + oRPC",
+  "type": "module",
+  "exports": {
+    ".": "./src/main.ts",
+    "./schema": "./src/schema/main.ts",
+    "./contract": "./src/contract/main.ts",
+    "./auth": "./src/auth/main.ts"
+  },
+  "dependencies": {
+    "@orpc/client": "catalog:orpc",
+    "@orpc/contract": "catalog:orpc",
+    "@orpc/openapi-client": "catalog:orpc",
+    "drizzle-zod": "catalog:drizzle",
+    "effect": "catalog:effect",
+    "zod": "catalog:default"
+  },
+  "peerDependencies": {
+    "better-auth": "catalog:better-auth",
+    "drizzle-orm": "catalog:drizzle"
+  }
+}

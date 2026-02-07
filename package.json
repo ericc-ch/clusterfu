@@ -1,0 +1,50 @@
+{
+  "name": "starter-effect",
+  "version": "0.0.0",
+  "description": "A starter kit for a Vite + oRPC",
+  "type": "module",
+  "scripts": {
+    "auth:generate": "tsx ./scripts/auth-generate.ts",
+    "db:generate": "tsx ./scripts/db-generate.ts",
+    "dev": "alchemy dev",
+    "format": "prettier --write .",
+    "lint": "oxlint --type-aware",
+    "prepare": "simple-git-hooks && effect-language-service patch && konteks sync",
+    "test": "vitest",
+    "typecheck": "tsc --build"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm run format",
+    "pre-push": "pnpm run typecheck && pnpm run test && pnpm run lint"
+  },
+  "devDependencies": {
+    "api": "workspace:*",
+    "@better-auth/cli": "catalog:better-auth",
+    "@cloudflare/workers-types": "catalog:cloudflare",
+    "@effect/language-service": "catalog:effect",
+    "@libsql/client": "catalog:default",
+    "@types/node": "catalog:default",
+    "@types/yargs": "^17.0.35",
+    "@typescript/native-preview": "7.0.0-dev.20260106.1",
+    "alchemy": "^0.83.2",
+    "dotenv": "^17.2.3",
+    "drizzle-kit": "catalog:drizzle",
+    "effect": "catalog:effect",
+    "konteks": "^0.0.7",
+    "oxlint": "^1.43.0",
+    "oxlint-tsgolint": "^0.11.4",
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "simple-git-hooks": "^2.13.1",
+    "tsx": "^4.21.0",
+    "typescript": "catalog:default",
+    "vitest": "catalog:vitest",
+    "wrangler": "catalog:cloudflare",
+    "yargs": "^18.0.0",
+    "zod": "catalog:default"
+  },
+  "packageManager": "pnpm@10.28.2",
+  "comments": [
+    "I added wrangler here is because of deps, alchemy has mismatching version required with @cloudflare/vite-plugin. This forces wrangler to be a specific version"
+  ]
+}

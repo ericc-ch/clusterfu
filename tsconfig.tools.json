@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.json",
+  "include": [
+    "./.opencode/plugin/",
+    "./scripts/",
+    "./alchemy.run.ts",
+    "**/*.config.*"
+  ],
+
+  "compilerOptions": {
+    "composite": true,
+    "types": ["node", "@cloudflare/workers-types"]
+  }
+}
