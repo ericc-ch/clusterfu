@@ -20,10 +20,7 @@ export default {
       Schema.decodeUnknown(EnvSchema)(env),
     )
     const DatabaseLive = Layer.sync(Database, () => drizzle(env.DB, { schema }))
-    const AuthLive = Auth.Default.pipe(
-      Layer.provide(EnvLive),
-      Layer.provide(DatabaseLive),
-    )
+    const AuthLive = Auth.Default.pipe(Layer.provide(EnvLive))
 
     const HealthRoute = HttpLayerRouter.use((router) =>
       router.add(
@@ -34,9 +31,6 @@ export default {
     )
 
     const AuthRoutes = HttpLayerRouter.use(
-      // IMPORTANT: yield* Auth OUTSIDE the handler to make it a layer-level requirement.
-      // If Auth is yielded INSIDE the handler, HttpLayerRouter wraps it as Request<"Requires", Auth>,
-      // which cannot be eliminated by Layer.provide() - forcing you to pass Context.empty() to handler().
       Effect.fn(function* (router) {
         const auth = yield* Auth
 

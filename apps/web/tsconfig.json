@@ -6,6 +6,10 @@
     "composite": true,
     "jsx": "react-jsx",
 
-    "types": ["node", "@cloudflare/workers-types"]
+    "types": ["node", "@cloudflare/workers-types"],
+
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   }
 }

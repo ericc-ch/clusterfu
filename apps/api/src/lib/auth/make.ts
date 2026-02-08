@@ -1,8 +1,7 @@
 import { betterAuth } from "better-auth"
-import { type DB } from "better-auth/adapters/drizzle"
 import { type EnvType } from "../env"
 
-export const makeAuth = (env: EnvType, db: DB) =>
+export const makeAuth = (env: EnvType) =>
   betterAuth({
     secret: env.API_BETTER_AUTH_SECRET,
     baseURL: env.API_BETTER_AUTH_URL.toString(),
