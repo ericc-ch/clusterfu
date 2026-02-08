@@ -4,8 +4,7 @@
   "description": "A starter kit for a Vite + oRPC",
   "type": "module",
   "scripts": {
-    "auth:generate": "tsx ./scripts/auth-generate.ts",
-    "db:generate": "tsx ./scripts/db-generate.ts",
+    "db:generate": "drizzle-kit generate",
     "dev": "alchemy dev",
     "format": "prettier --write .",
     "lint": "oxlint --type-aware",
@@ -19,13 +18,10 @@
   },
   "devDependencies": {
     "api": "workspace:*",
-    "@better-auth/cli": "catalog:better-auth",
     "@cloudflare/workers-types": "catalog:cloudflare",
     "@effect/language-service": "catalog:effect",
     "@libsql/client": "catalog:default",
     "@types/node": "catalog:default",
-    "@types/yargs": "^17.0.35",
-    "@typescript/native-preview": "7.0.0-dev.20260106.1",
     "alchemy": "^0.83.2",
     "dotenv": "^17.2.3",
     "drizzle-kit": "catalog:drizzle",
@@ -36,12 +32,9 @@
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "simple-git-hooks": "^2.13.1",
-    "tsx": "^4.21.0",
     "typescript": "catalog:default",
     "vitest": "catalog:vitest",
-    "wrangler": "catalog:cloudflare",
-    "yargs": "^18.0.0",
-    "zod": "catalog:default"
+    "wrangler": "catalog:cloudflare"
   },
   "packageManager": "pnpm@10.28.2",
   "comments": [

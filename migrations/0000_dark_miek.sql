@@ -16,6 +16,20 @@ CREATE TABLE `accounts` (
 );
 --> statement-breakpoint
 CREATE INDEX `accounts_userId_idx` ON `accounts` (`userId`);--> statement-breakpoint
+CREATE TABLE `sessions` (
+	`id` text PRIMARY KEY NOT NULL,
+	`expiresAt` integer NOT NULL,
+	`token` text NOT NULL,
+	`createdAt` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	`updatedAt` integer NOT NULL,
+	`ipAddress` text,
+	`userAgent` text,
+	`userId` text NOT NULL,
+	FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `sessions_token_unique` ON `sessions` (`token`);--> statement-breakpoint
+CREATE INDEX `sessions_userId_idx` ON `sessions` (`userId`);--> statement-breakpoint
 CREATE TABLE `users` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,

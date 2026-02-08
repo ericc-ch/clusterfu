@@ -18,7 +18,6 @@
     "@effect/sql-drizzle": "catalog:effect",
     "better-auth": "catalog:better-auth",
     "drizzle-orm": "catalog:drizzle",
-    "drizzle-zod": "catalog:drizzle",
     "effect": "catalog:effect",
     "shared": "workspace:*",
     "zod": "catalog:default"

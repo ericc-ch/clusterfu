@@ -72,6 +72,8 @@ export const api = await Worker("api", {
     API_CORS_ORIGIN: apiEnv.API_CORS_ORIGIN.href,
     API_BETTER_AUTH_SECRET: alchemy.secret(apiEnv.API_BETTER_AUTH_SECRET),
     API_BETTER_AUTH_URL: apiEnv.API_BETTER_AUTH_URL.href,
+    API_GITHUB_CLIENT_ID: apiEnv.API_GITHUB_CLIENT_ID,
+    API_GITHUB_CLIENT_SECRET: alchemy.secret(apiEnv.API_GITHUB_CLIENT_SECRET),
   },
 })
 

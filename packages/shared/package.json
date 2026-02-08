@@ -5,17 +5,10 @@
   "type": "module",
   "exports": {
     ".": "./src/main.ts",
-    "./schema": "./src/schema/main.ts",
-    "./contract": "./src/contract/main.ts",
-    "./auth": "./src/auth/main.ts"
+    "./schema": "./src/schema/main.ts"
   },
   "dependencies": {
-    "@orpc/client": "catalog:orpc",
-    "@orpc/contract": "catalog:orpc",
-    "@orpc/openapi-client": "catalog:orpc",
-    "drizzle-zod": "catalog:drizzle",
-    "effect": "catalog:effect",
-    "zod": "catalog:default"
+    "effect": "catalog:effect"
   },
   "peerDependencies": {
     "better-auth": "catalog:better-auth",

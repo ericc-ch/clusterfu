@@ -40,6 +40,8 @@ jobs:
           API_BETTER_AUTH_SECRET: ${{ secrets.API_BETTER_AUTH_SECRET }}
           API_BETTER_AUTH_URL: ${{ vars.API_BETTER_AUTH_URL }}
           API_CORS_ORIGIN: ${{ vars.API_CORS_ORIGIN }}
+          API_GITHUB_CLIENT_ID: ${{ vars.API_GITHUB_CLIENT_ID }}
+          API_GITHUB_CLIENT_SECRET: ${{ secrets.API_GITHUB_CLIENT_SECRET }}
           VITE_API_URL: ${{ vars.VITE_API_URL }}
 
           WEB_DOMAIN: ${{ vars.WEB_DOMAIN }}

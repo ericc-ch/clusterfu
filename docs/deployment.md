@@ -21,12 +21,13 @@ Go to **Settings > Environments** and create two environments: `dev` and `main`.
 
 Add these secrets to **both** environments:
 
-| Secret                   | Description                | Same for both?                      |
-| ------------------------ | -------------------------- | ----------------------------------- |
-| `ALCHEMY_STATE_TOKEN`    | State store authentication | Yes (shared per Cloudflare account) |
-| `ALCHEMY_PASSWORD`       | Encrypts secrets in state  | **No** - use different passwords    |
-| `CLOUDFLARE_API_TOKEN`   | Cloudflare API access      | Yes                                 |
-| `API_BETTER_AUTH_SECRET` | Auth session signing       | **No** - use different secrets      |
+| Secret                     | Description                | Same for both?                      |
+| -------------------------- | -------------------------- | ----------------------------------- |
+| `ALCHEMY_STATE_TOKEN`      | State store authentication | Yes (shared per Cloudflare account) |
+| `ALCHEMY_PASSWORD`         | Encrypts secrets in state  | **No** - use different passwords    |
+| `CLOUDFLARE_API_TOKEN`     | Cloudflare API access      | Yes                                 |
+| `API_BETTER_AUTH_SECRET`   | Auth session signing       | **No** - use different secrets      |
+| `API_GITHUB_CLIENT_SECRET` | GitHub OAuth app secret    | **No** - use different secrets      |
 
 #### How to get each secret
 
@@ -34,6 +35,7 @@ Add these secrets to **both** environments:
 - **`ALCHEMY_PASSWORD`**: Generate with `openssl rand -base64 32`. Use a **different** value per environment.
 - **`CLOUDFLARE_API_TOKEN`**: Create at [Cloudflare Dashboard > My Profile > API Tokens](https://dash.cloudflare.com/profile/api-tokens). Use the "Edit Cloudflare Workers" template or create a custom token with Workers, D1, and KV permissions. Alchemy will automatically resolve your account ID from this token.
 - **`API_BETTER_AUTH_SECRET`**: Generate with `openssl rand -base64 32`. Use a **different** value per environment.
+- **`API_GITHUB_CLIENT_SECRET`**: From your GitHub OAuth App settings. Create at [GitHub Settings > Developer Settings > OAuth Apps](https://github.com/settings/developers). Use a **different** app per environment (dev vs main).
 
 > **Note**: `CLOUDFLARE_ACCOUNT_ID` is optional. Alchemy automatically resolves it from your API token. Only set it explicitly if your token has access to multiple Cloudflare accounts.
 
@@ -41,18 +43,20 @@ Add these secrets to **both** environments:
 
 Add these variables to each environment (Settings > Environments > [env] > Environment variables):
 
-| Variable              | `dev`                        | `main`                   |
-| --------------------- | ---------------------------- | ------------------------ |
-| `API_BETTER_AUTH_URL` | `https://api.dev.verion.app` | `https://api.verion.app` |
-| `API_CORS_ORIGIN`     | `https://dev.verion.app`     | `https://verion.app`     |
-| `VITE_API_URL`        | `https://api.dev.verion.app` | `https://api.verion.app` |
-| `WEB_DOMAIN`          | `dev.verion.app`             | `verion.app`             |
-| `API_DOMAIN`          | `api.dev.verion.app`         | `api.verion.app`         |
+| Variable               | `dev`                        | `main`                       |
+| ---------------------- | ---------------------------- | ---------------------------- |
+| `API_BETTER_AUTH_URL`  | `https://api.dev.verion.app` | `https://api.verion.app`     |
+| `API_CORS_ORIGIN`      | `https://dev.verion.app`     | `https://verion.app`         |
+| `API_GITHUB_CLIENT_ID` | `<dev-github-oauth-app-id>`  | `<main-github-oauth-app-id>` |
+| `VITE_API_URL`         | `https://api.dev.verion.app` | `https://api.verion.app`     |
+| `WEB_DOMAIN`           | `dev.verion.app`             | `verion.app`                 |
+| `API_DOMAIN`           | `api.dev.verion.app`         | `api.verion.app`             |
 
 #### How to get each variable
 
 - **`API_BETTER_AUTH_URL`**: The public URL of your API (e.g., `https://api.verion.app`).
 - **`API_CORS_ORIGIN`**: The URL of your web app (e.g., `https://verion.app`).
+- **`API_GITHUB_CLIENT_ID`**: The Client ID from your GitHub OAuth App for this environment.
 - **`VITE_API_URL`**: Same as `API_BETTER_AUTH_URL` - the API endpoint your frontend calls.
 - **`WEB_DOMAIN`**: Custom domain for the web worker (must be registered in Cloudflare).
 - **`API_DOMAIN`**: Custom domain for the API worker (must be registered in Cloudflare).
