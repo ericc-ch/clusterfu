@@ -4,7 +4,6 @@
     "https://github.com/alchemy-run/alchemy.git",
     "https://github.com/better-auth/better-auth.git",
     "https://github.com/drizzle-team/drizzle-orm.git",
-    "https://github.com/tanstack/router.git",
     "https://github.com/Effect-TS/effect.git",
     "https://github.com/tim-smart/effect-atom.git"
   ]

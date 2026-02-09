@@ -33,7 +33,7 @@
     "prettier-plugin-tailwindcss": "^0.7.2",
     "simple-git-hooks": "^2.13.1",
     "typescript": "catalog:default",
-    "vitest": "catalog:vitest",
+    "vitest": "catalog:vite",
     "wrangler": "catalog:cloudflare"
   },
   "packageManager": "pnpm@10.28.2",
