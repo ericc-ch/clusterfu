@@ -17,18 +17,18 @@
     "pre-push": "pnpm run typecheck && pnpm run test && pnpm run lint"
   },
   "devDependencies": {
-    "api": "workspace:*",
     "@cloudflare/workers-types": "catalog:cloudflare",
     "@effect/language-service": "catalog:effect",
     "@libsql/client": "catalog:default",
     "@types/node": "catalog:default",
-    "alchemy": "^0.83.2",
-    "dotenv": "^17.2.3",
+    "alchemy": "^0.84.0",
+    "api": "workspace:*",
+    "dotenv": "^17.3.1",
     "drizzle-kit": "catalog:drizzle",
     "effect": "catalog:effect",
     "konteks": "^0.0.7",
-    "oxlint": "^1.43.0",
-    "oxlint-tsgolint": "^0.11.4",
+    "oxlint": "^1.47.0",
+    "oxlint-tsgolint": "^0.12.1",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "simple-git-hooks": "^2.13.1",
@@ -36,7 +36,7 @@
     "vitest": "catalog:vite",
     "wrangler": "catalog:cloudflare"
   },
-  "packageManager": "pnpm@10.28.2",
+  "packageManager": "pnpm@10.29.3",
   "comments": [
     "I added wrangler here is because of deps, alchemy has mismatching version required with @cloudflare/vite-plugin. This forces wrangler to be a specific version"
   ]

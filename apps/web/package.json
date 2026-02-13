@@ -11,7 +11,7 @@
     "dev": "vite"
   },
   "dependencies": {
-    "@base-ui/react": "^1.1.0",
+    "@base-ui/react": "^1.2.0",
     "@dicebear/collection": "catalog:dicebear",
     "@dicebear/core": "catalog:dicebear",
     "@effect-atom/atom-react": "catalog:effect",
