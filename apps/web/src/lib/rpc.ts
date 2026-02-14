@@ -6,7 +6,7 @@ import { RootRpcGroup } from "api/rpc"
 import { env } from "./env"
 
 const protocolLayer = RpcClient.layerProtocolHttp({
-  url: `${env.VITE_API_URL}/rpc`,
+  url: new URL("/rpc", env.VITE_API_URL).href,
 }).pipe(Layer.provide([FetchHttpClient.layer, RpcSerialization.layerJsonRpc()]))
 
 export class RpcClientTag extends AtomRpc.Tag<RpcClientTag>()("RpcClient", {

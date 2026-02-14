@@ -34,3 +34,14 @@ TanStack Form with Zod validation and shadcn/ui Field components.
 References:
 
 - apps/web/src/routes/login.tsx
+
+## Dropdown Menu Gotchas
+
+Uses Base UI primitives (not Radix), which has different requirements:
+
+- **No nested buttons**: `DropdownMenuTrigger` renders as `<button>`, do not wrap with `<Button>` - style the trigger directly with className
+- **Label requires Group**: `DropdownMenuLabel` must be wrapped in `DropdownMenuGroup` or you'll get "MenuGroupRootContext is missing" error
+
+References:
+
+- apps/web/src/routes/index.tsx
