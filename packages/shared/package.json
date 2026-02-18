@@ -1,7 +1,6 @@
 {
   "name": "shared",
   "version": "0.0.0",
-  "description": "Polarity Shared",
   "type": "module",
   "exports": {
     ".": "./src/main.ts",

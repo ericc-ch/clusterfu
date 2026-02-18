@@ -1,7 +1,6 @@
 {
   "name": "polarity",
   "version": "0.0.0",
-  "description": "Polarity - a real-time multiplayer game",
   "type": "module",
   "scripts": {
     "db:generate": "drizzle-kit generate",

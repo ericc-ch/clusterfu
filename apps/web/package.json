@@ -1,7 +1,6 @@
 {
   "name": "web",
   "version": "0.0.0",
-  "description": "Polarity Web",
   "type": "module",
   "exports": {
     "./env": "./src/lib/env.ts"

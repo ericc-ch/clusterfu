@@ -119,5 +119,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+    font-optical-sizing: auto;
   }
 }

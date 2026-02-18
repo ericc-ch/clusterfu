@@ -1,7 +1,6 @@
 {
   "name": "api",
   "version": "0.0.0",
-  "description": "Polarity API",
   "type": "module",
   "exports": {
     "./env": "./src/lib/env.ts",
