@@ -59,9 +59,18 @@ export default {
       Layer.provide(BooksHandlers),
     )
 
+    const CorsLayer = Effect.gen(function* () {
+      const { API_CORS_ORIGIN } = yield* EnvContext
+      return HttpLayerRouter.cors({
+        allowedOrigins: [API_CORS_ORIGIN.origin],
+        credentials: true,
+      })
+    }).pipe(Layer.unwrapEffect, Layer.provide(EnvLive))
+
     const AppLive = Layer.mergeAll(HealthRoute, AuthRoutes, RpcRoutes).pipe(
       Layer.provide(AuthLive),
       Layer.provide(DatabaseLive),
+      Layer.provide(CorsLayer),
     )
 
     const { handler } = HttpLayerRouter.toWebHandler(AppLive)
