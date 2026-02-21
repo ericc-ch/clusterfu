@@ -1,7 +1,8 @@
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { auth } from "@/lib/auth"
-import { createFileRoute } from "@tanstack/react-router"
+import { cn } from "@/lib/utils"
+import { createFileRoute, Link } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 
 type RepositoryStatus =
@@ -109,21 +110,34 @@ export const Route = createFileRoute("/")({
               polarity
             </div>
 
-            {user ?
-              <Button variant="outline" onClick={() => auth.signOut()}>
-                Sign out
-              </Button>
-            : <Button
-                onClick={() =>
-                  auth.signIn.social({
-                    provider: "github",
-                    callbackURL: window.location.href,
-                  })
-                }
+            <div className="flex items-center gap-2">
+              <Link
+                to="/submit"
+                className={cn(buttonVariants({ variant: "outline" }), {
+                  "opacity-50": !user,
+                })}
+                disabled={!user}
+                tabIndex={!user ? -1 : undefined}
               >
-                Sign in
-              </Button>
-            }
+                Submit repo
+              </Link>
+
+              {user ?
+                <Button variant="outline" onClick={() => auth.signOut()}>
+                  Sign out
+                </Button>
+              : <Button
+                  onClick={() =>
+                    auth.signIn.social({
+                      provider: "github",
+                      callbackURL: window.location.href,
+                    })
+                  }
+                >
+                  Sign in
+                </Button>
+              }
+            </div>
           </nav>
         </header>
 

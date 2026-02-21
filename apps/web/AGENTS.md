@@ -1,173 +1,188 @@
 Vite + React + TanStack Start (SPA) + Effect RPC
 
-## Architecture
-
-Uses Effect RPC over HTTP via @effect-atom/atom-react for type-safe client-server communication:
-
-- **Effect RPC** - Type-safe RPC calls using @effect/rpc with HTTP protocol
-- **TanStack Start** - SPA mode with file-based routing via @tanstack/react-start
-- **Cloudflare** - Deployed via Alchemy integration
-
-References:
-
-- apps/web/src/lib/rpc.ts - Effect RPC client configuration
-- apps/web/src/routes/\_\_root.tsx - Root route with RegistryProvider
-
 ## Effect RPC
 
-Uses @effect-atom/atom-react for RPC client integration with Effect RPC over HTTP:
+Type-safe RPC via `@effect-atom/atom-react`.
 
-- RPC client defined in `lib/rpc.ts` using `AtomRpc.Tag`
-- Wrap app in `RegistryProvider` (already in \_\_root.tsx)
-- RPC protocol uses HTTP with JSON serialization
-- API contracts are defined in `api/rpc` (workspace dependency)
-
-**For queries (readonly):**
+**Queries (readonly):**
 
 ```typescript
 import { useAtomValue } from "@effect-atom/atom-react"
 import { RpcClientTag } from "@/lib/rpc"
 
-function MyComponent() {
-  const result = useAtomValue(RpcClientTag.query("methodName", payload))
-  // result is Result.Result<SuccessType>
-}
+const result = useAtomValue(RpcClientTag.query("methodName", payload))
+// result is Result.Result<SuccessType>
 ```
 
-**For mutations:**
+**Mutations:**
 
 ```typescript
 import { useAtomSet } from "@effect-atom/atom-react"
 import { RpcClientTag } from "@/lib/rpc"
 
-function MyComponent() {
-  const mutate = useAtomSet(RpcClientTag.mutation("methodName"))
-  // Call mutate({ payload, reactivityKeys?: [...] })
-}
+const mutate = useAtomSet(RpcClientTag.mutation("methodName"))
+mutate({ payload, reactivityKeys?: ["users"] })
 ```
 
-**With reactivity (for automatic cache invalidation):**
+**Cache invalidation:**
 
 ```typescript
 // Query with reactivity key
 const data = useAtomValue(
-  RpcClientTag.query("getUsers", void 0, {
-    reactivityKeys: ["users"],
-  }),
+  RpcClientTag.query("getUsers", void 0, { reactivityKeys: ["users"] }),
 )
 
 // Mutation that invalidates the query
 const createUser = useAtomSet(RpcClientTag.mutation("createUser"))
-// Call with reactivityKeys to invalidate
 createUser({ payload: newUser, reactivityKeys: ["users"] })
 ```
 
+**References:** `apps/web/src/lib/rpc.ts`, `apps/web/src/routes/__root.tsx`
+
 ## Components
 
-shadcn/ui with new-york style, Tailwind v4, Lucide icons. Run from apps/web/.
-Uses Base UI (@base-ui/react) instead of Radix UI as the underlying primitive library.
+shadcn/ui (new-york), Tailwind v4, Base UI primitives, Lucide icons.
 
-- Search: pnpm dlx shadcn@latest search <query>
-- Add: pnpm dlx shadcn@latest add <component>
-- List all: pnpm dlx shadcn@latest view @shadcn
+```bash
+# From apps/web/
+pnpm dlx shadcn@latest search <query>
+pnpm dlx shadcn@latest add <component>
+```
 
-References:
-
-- apps/web/components.json
+**References:** `apps/web/components.json`
 
 ## Typography
 
-Prioritize using semantic text sizes: text-h1, text-h2, text-h3, text-h4, text-lead, text-large, text-body, text-small
+Use semantic text sizes:
 
-References:
+```typescript
+<h1 className="text-h1">Heading</h1>
+<p className="text-body">Body text</p>
+<span className="text-small">Small text</span>
+```
 
-- apps/web/src/index.css
+Available: `text-h1` through `text-h4`, `text-lead`, `text-large`, `text-body`, `text-small`
+
+**References:** `apps/web/src/index.css`
 
 ## Forms
 
-TanStack Form with Zod validation and shadcn/ui Field components.
+TanStack Form with Standard Schema validation.
 
-- `validators.onSubmit` - Zod schema for field validation
-- `onSubmit` handler + `useState` - Server/auth errors (separate from validation)
-- `validators.onSubmitAsync` - Async validation only, not submission logic
-- `form.Subscribe` - Use for reactive UI (e.g., submit button state)
-- `form.state` - Snapshot, not reactive on its own
+**Effect Schema (recommended):**
 
-References:
+```typescript
+import { Schema } from "effect"
 
-- apps/web/src/routes/login.tsx
+const formSchema = Schema.standardSchemaV1(
+  Schema.Struct({
+    email: Schema.String.pipe(
+      Schema.minLength(1, { message: () => "Required" }),
+      Schema.pattern(/^.+@.+$/, { message: () => "Invalid email" }),
+    ),
+  }),
+)
+
+type FormData = Schema.Schema.Type<typeof formSchema>
+
+const form = useForm({
+  defaultValues: { email: "" } as FormData,
+  validators: { onSubmit: formSchema },
+  onSubmit: async ({ value }) => {
+    console.log(value)
+  },
+})
+```
+
+**Patterns:**
+
+- `Schema.standardSchemaV1()` - Wraps Effect Schema for TanStack Form
+- `Schema.String.pipe()` - Chain validations
+- `filter()` - Return `true` or string error message
+- `message: () => "..."` - Error message function
+- `Schema.Schema.Type<typeof schema>` - Infer TypeScript type
+
+**References:**
+
+- Effect Schema: `apps/web/src/routes/submit.tsx`
+- TanStack Form docs: https://tanstack.com/form/latest
 
 ## Authentication
 
-Uses Better Auth with React integration for authentication:
+Better Auth via `better-auth/react`.
 
-- Import from `better-auth/react` (not `better-auth/client`)
-- Base URL configured to point to `/api/auth` on the API
-- Client methods return `{ data, error }` - always check for errors
-
-**useSession hook:**
+**Check session:**
 
 ```typescript
 import { auth } from "@/lib/auth"
 
-function MyComponent() {
-  const { data: session, isPending, error, refetch } = auth.useSession()
-
-  if (isPending) return <div>Loading...</div>
-  if (error) return <div>Error: {error.message}</div>
-  if (session) return <div>Welcome {session.user.name}</div>
-}
+const { data: session, isPending, error, refetch } = auth.useSession()
+if (session) return <div>Welcome {session.user.name}</div>
 ```
 
-**Social sign in (GitHub OAuth):**
+**Sign in/out:**
 
 ```typescript
+// Social auth
 const { error } = await auth.signIn.social({
   provider: "github",
   callbackURL: window.location.href,
 })
-if (error) {
-  // Handle error
-}
-```
 
-**Sign out:**
-
-```typescript
+// Sign out
 await auth.signOut()
 ```
 
-**Error handling:**
+**Error handling:** All methods return `{ data, error }` - always check for errors.
+
+**References:**
+
+- Client setup: `apps/web/src/lib/auth.ts`
+- Usage example: `apps/web/src/routes/index.tsx`
+
+## Common Patterns
+
+**Button Links (not nested):**
 
 ```typescript
-const { data, error } = await auth.signIn.social({ provider: "github" })
-if (error) {
-  console.error(error.message) // Human-readable error message
-  console.error(error.status) // HTTP status code
-}
+import { Link } from "@tanstack/react-router"
+import { buttonVariants } from "@/components/ui/button"
+
+// Correct
+<Link to="/submit" className={buttonVariants({ variant: "outline" })}>
+  Submit
+</Link>
 ```
 
-References:
+**Dropdown Menu (Base UI):**
 
-- apps/web/src/lib/auth.ts - Better Auth client setup
-- apps/web/src/routes/index.tsx - Usage example
+- No nested buttons: `DropdownMenuTrigger` renders as `<button>`, don't wrap with `<Button>`
+- Label requires Group: `DropdownMenuLabel` must be wrapped in `DropdownMenuGroup`
 
-## Dropdown Menu Gotchas
+**Layout spacing:**
 
-Uses Base UI primitives (not Radix), which has different requirements:
+- **Never use margin** (`m-*`, `mx-*`, `my-*`, `mt-*`, `space-x-*`, `space-y-*`)
+- **Use gaps instead**: `flex flex-col gap-4` or `grid gap-4`
 
-- **No nested buttons**: `DropdownMenuTrigger` renders as `<button>`, do not wrap with `<Button>` - style the trigger directly with className
-- **Label requires Group**: `DropdownMenuLabel` must be wrapped in `DropdownMenuGroup` or you'll get "MenuGroupRootContext is missing" error
+**Form submission:**
 
-References:
+```typescript
+// Always use void for linting
+<form onSubmit={void form.handleSubmit()}>
+```
 
-- apps/web/src/routes/index.tsx
+**Reactive form state:**
 
-## Layout Guidelines
+```typescript
+// Use Subscribe for reactive UI
+<form.Subscribe
+  selector={(state) => state.isSubmitting}
+  children={(isSubmitting) => (
+    <Button disabled={isSubmitting}>
+      {isSubmitting ? "Submitting..." : "Submit"}
+    </Button>
+  )}
+/>
+```
 
-Never use margin spacing (`m-*`, `mx-*`, `my-*`, `mt-*`, etc.) or `space-x-*` / `space-y-*` utilities for element spacing. Instead, use:
-
-- **Flex layouts with gaps**: `flex flex-col gap-4` or `flex gap-4`
-- **Grid layouts with gaps**: `grid gap-4`
-
-This maintains consistent spacing and makes layouts more maintainable.
+**References:** `apps/web/src/routes/index.tsx`
