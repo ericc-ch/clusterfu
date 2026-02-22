@@ -13,12 +13,19 @@ function formatRelativeTime(timestamp: number | null): string {
 export const Route = createFileRoute("/_layout/")({
   component: function Home() {
     const [searchQuery, setSearchQuery] = useState("")
-    const reposAtom = useMemo(() => RpcClientTag.query("RepositoryList", {}), [])
+    const reposAtom = useMemo(
+      () => RpcClientTag.query("RepositoryList", {}),
+      [],
+    )
     const reposResult = useAtomValue(reposAtom)
 
-    useAtomSubscribe(reposAtom, (result) => {
-      console.log("Atom update:", result)
-    }, { immediate: true })
+    useAtomSubscribe(
+      reposAtom,
+      (result) => {
+        console.log("Atom update:", result)
+      },
+      { immediate: true },
+    )
 
     console.log("reposResult:", reposResult)
 
@@ -41,18 +48,18 @@ export const Route = createFileRoute("/_layout/")({
 
         {Result.match(reposResult, {
           onInitial: () => (
-            <div className="text-muted-foreground text-center py-8">
+            <div className="text-muted-foreground py-8 text-center">
               Loading repositories...
             </div>
           ),
           onFailure: () => (
-            <div className="text-destructive text-center py-8">
+            <div className="text-destructive py-8 text-center">
               Failed to load repositories
             </div>
           ),
           onSuccess: () =>
             filteredRepos.length === 0 ?
-              <div className="text-muted-foreground text-center py-8">
+              <div className="text-muted-foreground py-8 text-center">
                 No repositories found
               </div>
             : filteredRepos.map((repo) => (
