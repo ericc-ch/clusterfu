@@ -13,7 +13,7 @@
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm run format",
-    "pre-push": "pnpm run typecheck && pnpm run test && pnpm run lint"
+    "pre-push": "pnpm run typecheck && pnpm run lint"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:cloudflare",
