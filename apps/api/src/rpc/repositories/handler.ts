@@ -5,7 +5,7 @@ import {
   RepositoryFullName,
 } from "shared/schema"
 import { Database } from "../../lib/db"
-import { ValidationError } from "../errors"
+import { ValidationError } from "../../types/errors"
 import { RepositoriesRpcGroup } from "./contract"
 
 export class RepositoryService extends Effect.Service<RepositoryService>()(

@@ -1,7 +1,7 @@
 import { Rpc, RpcGroup } from "@effect/rpc"
 import { Schema } from "effect"
 import { Repository } from "shared/schema"
-import { UnauthorizedError, ValidationError } from "../errors"
+import { UnauthorizedError, ValidationError } from "../../types/errors"
 
 export class RepositoriesRpcGroup extends RpcGroup.make(
   Rpc.make("RepositoryList", {

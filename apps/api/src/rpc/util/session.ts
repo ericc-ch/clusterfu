@@ -1,7 +1,7 @@
 import { Headers } from "@effect/platform"
 import { Effect } from "effect"
 import { Auth } from "../../lib/auth/main"
-import { UnauthorizedError } from "../errors"
+import { UnauthorizedError } from "../../types/errors"
 
 export const getSession = (headers: Headers.Headers) =>
   Effect.gen(function* () {

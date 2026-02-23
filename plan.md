@@ -204,12 +204,12 @@ export class NotFoundError extends Error {
 // same for ValidationError, UnauthorizedError, ForbiddenError
 ```
 
-- [ ] convert `NotFoundError`
-- [ ] convert `ValidationError`
-- [ ] convert `UnauthorizedError`
-- [ ] convert `ForbiddenError`
-- [ ] remove effect imports
-- [ ] move to `types/errors.ts` (or `lib/errors.ts`)
+- [x] convert `NotFoundError`
+- [x] convert `ValidationError`
+- [x] convert `UnauthorizedError`
+- [x] convert `ForbiddenError`
+- [x] remove effect imports
+- [x] move to `types/errors.ts` (or `lib/errors.ts`)
 
 ### 3.5 rpc/books/handler.ts -> routes/books.ts
 
@@ -653,7 +653,7 @@ packages/shared/src/
 - [ ] reorganize api folder structure
 - [ ] delete `rpc/` folder and subfolders
 - [ ] create `routes/` folder
-- [ ] create `types/` folder
+- [x] create `types/` folder
 - [x] merge `lib/auth/` into `lib/auth.ts`
 - [ ] rename `web/lib/rpc.ts` to `web/lib/api.ts`
 

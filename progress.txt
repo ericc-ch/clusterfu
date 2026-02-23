@@ -103,3 +103,25 @@ Next: Begin working on first task.
   - apps/api/src/lib/auth-dummy.ts
   - plan.md
   - progress.txt
+
+---
+
+- Tasks completed in this session
+  - Converted rpc error classes to standard Error subclasses
+  - Moved errors module to types/errors.ts and updated imports
+  - Checked off errors migration tasks in plan
+- Decisions made and why
+  - Used simple Error subclasses to align with future Hono error handling
+  - Updated rpc import paths now to avoid broken references after move
+- Blockers encountered
+  - pnpm run typecheck fails due to remaining Effect-era modules and mixed schemas
+  - pnpm run test exits with no test files found
+- Files changed
+  - apps/api/src/rpc/books/contract.ts
+  - apps/api/src/rpc/books/handler.ts
+  - apps/api/src/rpc/repositories/contract.ts
+  - apps/api/src/rpc/repositories/handler.ts
+  - apps/api/src/rpc/util/session.ts
+  - apps/api/src/types/errors.ts
+  - plan.md
+  - progress.txt

@@ -7,7 +7,7 @@ import {
   BookUpdate,
 } from "shared/schema"
 import { Database } from "../../lib/db"
-import { NotFoundError } from "../errors"
+import { NotFoundError } from "../../types/errors"
 import { getSession } from "../util/session"
 import { BooksRpcGroup } from "./contract"
 

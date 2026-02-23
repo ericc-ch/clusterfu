@@ -1,7 +1,11 @@
 import { Rpc, RpcGroup } from "@effect/rpc"
 import { Schema } from "effect"
 import { Book, BookId, BookInsert, BookUpdate } from "shared/schema"
-import { NotFoundError, UnauthorizedError, ValidationError } from "../errors"
+import {
+  NotFoundError,
+  UnauthorizedError,
+  ValidationError,
+} from "../../types/errors"
 
 export class BooksRpcGroup extends RpcGroup.make(
   Rpc.make("BookGet", {
