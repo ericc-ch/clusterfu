@@ -147,9 +147,9 @@ export const createDB = (d1: D1Database): Database => {
 }
 ```
 
-- [ ] change `Database` from tag to type alias
-- [ ] keep `createDB` function
-- [ ] remove effect imports
+- [x] change `Database` from tag to type alias
+- [x] keep `createDB` function
+- [x] remove effect imports
 
 ### 3.3 lib/auth/main.ts + make.ts
 
@@ -669,7 +669,7 @@ packages/shared/src/
 
 2. [ ] **api package** - rewrite with hono (parallel to existing, test both)
    - [ ] lib/env.ts
-   - [ ] lib/db.ts
+   - [x] lib/db.ts
    - [ ] lib/auth.ts (merge main + make)
    - [ ] routes/books.ts
    - [ ] routes/repositories.ts

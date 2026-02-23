@@ -1,6 +1,5 @@
 import { drizzle } from "drizzle-orm/d1"
 import type { BaseSQLiteDatabase } from "drizzle-orm/sqlite-core"
-import { Context } from "effect"
 import { schema } from "shared/schema"
 
 export type GenericSQLite = BaseSQLiteDatabase<
@@ -9,11 +8,8 @@ export type GenericSQLite = BaseSQLiteDatabase<
   typeof schema
 >
 
+export type Database = GenericSQLite
+
 export function createDB(d1: D1Database): GenericSQLite {
   return drizzle(d1, { schema })
 }
-
-export class Database extends Context.Tag("api/lib/db/Database")<
-  Database,
-  GenericSQLite
->() {}

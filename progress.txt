@@ -69,3 +69,19 @@ Next: Begin working on first task.
   - apps/api/src/lib/env.ts
   - plan.md
   - progress.txt
+
+---
+
+- Tasks completed in this session
+  - Simplified api db module to remove Effect context tag
+  - Exported Database as a type alias and kept createDB helper
+  - Checked off lib/db.ts tasks in plan
+- Decisions made and why
+  - Kept GenericSQLite export to avoid reshaping existing imports
+- Blockers encountered
+  - `pnpm run typecheck` fails due to remaining Effect-based env usage and mixed Zod/Effect schemas in api rpc files
+  - `pnpm run test` exits with no test files found
+- Files changed
+  - apps/api/src/lib/db.ts
+  - plan.md
+  - progress.txt
