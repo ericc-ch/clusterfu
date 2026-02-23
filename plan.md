@@ -355,11 +355,11 @@ export const apiClient = hc<AppType>(env.VITE_API_URL, {
 export type ApiClient = typeof apiClient
 ```
 
-- [ ] rename file to `api.ts`
-- [ ] create `apiClient` with `hc<AppType>()`
-- [ ] set `credentials: "include"` for auth cookies
-- [ ] export `ApiClient` type
-- [ ] remove effect-atom imports
+- [x] rename file to `api.ts`
+- [x] create `apiClient` with `hc<AppType>()`
+- [x] set `credentials: "include"` for auth cookies
+- [x] export `ApiClient` type
+- [x] remove effect-atom imports
 
 ### 4.2 routes/\_\_root.tsx
 
@@ -403,10 +403,10 @@ function RootDocument({ children }) {
 }
 ```
 
-- [ ] create `QueryClient` instance
-- [ ] replace `RegistryProvider` with `QueryClientProvider`
-- [ ] remove @effect-atom import
-- [ ] add @tanstack/react-query import
+- [x] create `QueryClient` instance
+- [x] replace `RegistryProvider` with `QueryClientProvider`
+- [x] remove @effect-atom import
+- [x] add @tanstack/react-query import
 
 ### 4.3 routes/\_layout/index.tsx
 

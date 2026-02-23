@@ -212,3 +212,41 @@ Next: Begin working on first task.
   - plan.md
   - pnpm-lock.yaml
   - progress.txt
+
+---
+
+- Tasks completed in this session
+  - Converted lib/rpc.ts to lib/api.ts with Hono client
+  - Created apiClient using hc<AppType>() with credentials include
+  - Fixed import path from api/src/main to api/main for proper package resolution
+  - Deleted old lib/rpc.ts file
+  - Checked off section 4.1 tasks in plan.md
+- Decisions made and why
+  - Used api/main export path to match package.json exports configuration
+  - Kept credentials: "include" to maintain auth cookie behavior
+  - AppType import provides full type safety between API and client
+- Blockers encountered
+  - Initial import path was api/src/main but package exports use ./main
+  - Pre-existing lint error in env.ts unrelated to this task (z.string().url() deprecated)
+  - Route files still reference deleted rpc.ts (to be fixed in tasks 4.2-4.4)
+- Files changed
+  - apps/web/src/lib/api.ts (created)
+  - apps/web/src/lib/rpc.ts (deleted)
+  - plan.md
+  - progress.txt
+
+---
+
+- Tasks completed in this session
+  - Verified routes/__root.tsx already uses QueryClientProvider from @tanstack/react-query
+  - Confirmed QueryClient is configured with 5-minute staleTime and disabled window focus refetch
+  - Checked off all section 4.2 tasks in plan.md
+- Decisions made and why
+  - File was already converted - no changes needed
+  - Configuration matches plan recommendations for caching behavior
+- Blockers encountered
+  - None for this task
+  - Remaining type errors are in index.tsx and submit.tsx (next tasks)
+- Files changed
+  - plan.md
+  - progress.txt
