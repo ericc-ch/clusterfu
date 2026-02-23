@@ -310,14 +310,14 @@ export default app
 export type AppType = typeof app
 ```
 
-- [ ] set up hono app with `new Hono<{ Bindings: Env }>()`
-- [ ] add cors middleware with env-based origin
-- [ ] add health check route
-- [ ] add auth routes handler
-- [ ] mount books routes at `/api/books`
-- [ ] mount repositories routes at `/api/repositories`
-- [ ] export `AppType` for client
-- [ ] remove effect imports
+- [x] set up hono app with `new Hono<{ Bindings: Env }>()`
+- [x] add cors middleware with env-based origin
+- [x] add health check route
+- [x] add auth routes handler
+- [x] mount books routes at `/api/books`
+- [x] mount repositories routes at `/api/repositories`
+- [x] export `AppType` for client
+- [x] remove effect imports
 
 ---
 
@@ -673,7 +673,7 @@ packages/shared/src/
    - [x] lib/auth.ts (merge main + make)
    - [x] routes/books.ts
    - [x] routes/repositories.ts
-   - [ ] main.ts
+   - [x] main.ts
    - [ ] run typecheck
    - [ ] test all routes manually
 

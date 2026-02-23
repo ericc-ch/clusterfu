@@ -1,82 +1,37 @@
-import {
-  HttpLayerRouter,
-  HttpServerRequest,
-  HttpServerResponse,
-} from "@effect/platform"
-import { RpcSerialization, RpcServer } from "@effect/rpc"
-import { drizzle } from "drizzle-orm/d1"
-import { Effect, Layer, Schema } from "effect"
-import { schema } from "shared/schema"
-import { Auth } from "./lib/auth/main"
-import { Database } from "./lib/db"
-import { EnvContext, EnvSchema } from "./lib/env"
-import { BooksHandlers } from "./rpc/books/handler"
-import { RootRpcGroup } from "./rpc/contract"
-import { RepositoriesHandlers } from "./rpc/repositories/handler"
+import { Hono } from "hono"
+import { cors } from "hono/cors"
+import { createAuth } from "./lib/auth"
+import { parseEnv, type Env } from "./lib/env"
+import booksRoutes from "./routes/books"
+import repositoriesRoutes from "./routes/repositories"
 
-export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    const EnvLive = Layer.effect(
-      EnvContext,
-      Schema.decodeUnknown(EnvSchema)(env),
-    )
-    const DatabaseLive = Layer.sync(Database, () => drizzle(env.DB, { schema }))
-    const AuthLive = Auth.Default.pipe(Layer.provide(EnvLive))
+type Bindings = Env & { DB: D1Database }
 
-    const HealthRoute = HttpLayerRouter.use((router) =>
-      router.add(
-        "GET",
-        "/",
-        HttpServerResponse.text("I'm FINE. Thanks for asking. Finally."),
-      ),
-    )
+const app = new Hono<{
+  Bindings: Bindings
+  Variables: { parsedEnv: Env }
+}>()
 
-    const AuthRoutes = HttpLayerRouter.use(
-      Effect.fn(function* (router) {
-        const auth = yield* Auth
+app.use("*", async (c, next) => {
+  const parsedEnv = parseEnv(c.env as unknown as Record<string, string>)
+  c.set("parsedEnv", parsedEnv)
+  return cors({
+    origin: parsedEnv.API_CORS_ORIGIN,
+    credentials: true,
+  })(c, next)
+})
 
-        yield* router.add(
-          "*",
-          "/api/auth/*",
-          Effect.fn(function* (request) {
-            const rawRequest = yield* HttpServerRequest.toWeb(request)
-            const response = yield* Effect.promise(() =>
-              auth.handler(rawRequest),
-            )
+app.get("/", (c) => c.text("i'm fine. thanks for asking. finally."))
 
-            return yield* HttpServerResponse.fromWeb(response)
-          }),
-        )
-      }),
-    )
+app.use("/api/auth/*", async (c) => {
+  const parsedEnv = c.get("parsedEnv")
+  const auth = createAuth(parsedEnv)
+  return auth.handler(c.req.raw)
+})
 
-    const RpcRoutes = HttpLayerRouter.use(
-      Effect.fn(function* (router) {
-        const httpApp = yield* RpcServer.toHttpApp(RootRpcGroup)
-        return yield* router.add("POST", "/rpc", httpApp)
-      }),
-    ).pipe(
-      Layer.provide(RpcSerialization.layerJsonRpc()),
-      Layer.provide(BooksHandlers),
-      Layer.provide(RepositoriesHandlers),
-    )
+app.route("/api/books", booksRoutes)
+app.route("/api/repositories", repositoriesRoutes)
 
-    const CorsLayer = Effect.gen(function* () {
-      const { API_CORS_ORIGIN } = yield* EnvContext
-      return HttpLayerRouter.cors({
-        allowedOrigins: [API_CORS_ORIGIN.origin],
-        credentials: true,
-      })
-    }).pipe(Layer.unwrapEffect, Layer.provide(EnvLive))
+export type AppType = typeof app
 
-    const AppLive = Layer.mergeAll(HealthRoute, AuthRoutes, RpcRoutes).pipe(
-      Layer.provide(AuthLive),
-      Layer.provide(DatabaseLive),
-      Layer.provide(CorsLayer),
-    )
-
-    const { handler } = HttpLayerRouter.toWebHandler(AppLive)
-
-    return handler(request)
-  },
-}
+export default app

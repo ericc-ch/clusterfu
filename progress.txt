@@ -163,3 +163,20 @@ Next: Begin working on first task.
   - apps/api/src/rpc/repositories/handler.ts
   - plan.md
   - progress.txt
+
+---
+
+- Tasks completed in this session
+  - Rewrote api entry point to compose Hono routes and middleware
+  - Added auth handler, health check, and mounted books/repositories routes
+  - Checked off main.ts migration tasks in plan
+- Decisions made and why
+  - Parsed env once per request and stored it in Hono context for auth/cors reuse
+  - Returned raw better-auth handler response to keep cookie behavior intact
+- Blockers encountered
+  - `pnpm run typecheck` fails due to missing Hono deps and remaining Effect-era rpc modules
+  - `pnpm run test` exits with no test files found
+- Files changed
+  - apps/api/src/main.ts
+  - plan.md
+  - progress.txt
