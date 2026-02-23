@@ -85,3 +85,21 @@ Next: Begin working on first task.
   - apps/api/src/lib/db.ts
   - plan.md
   - progress.txt
+
+---
+
+- Tasks completed in this session
+  - Merged api auth service into a single `createAuth` factory
+  - Moved better-auth dummy config to `auth-dummy.ts`
+  - Checked off auth migration tasks in plan
+- Decisions made and why
+  - Kept a standalone dummy auth file to satisfy better-auth CLI resolution
+  - Switched auth config to string URLs to match zod env parsing
+- Blockers encountered
+  - `pnpm run typecheck` fails due to remaining Effect-era modules (missing `EnvContext`/`EnvSchema` and old auth import paths)
+  - `pnpm run test` exits with no test files found
+- Files changed
+  - apps/api/src/lib/auth.ts
+  - apps/api/src/lib/auth-dummy.ts
+  - plan.md
+  - progress.txt

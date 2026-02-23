@@ -176,10 +176,10 @@ export const createAuth = (env: Env) => {
 }
 ```
 
-- [ ] merge `main.ts` and `make.ts` into `auth.ts`
-- [ ] create `createAuth` function
-- [ ] remove effect service pattern
-- [ ] delete `lib/auth/` folder, move to `lib/auth.ts`
+- [x] merge `main.ts` and `make.ts` into `auth.ts`
+- [x] create `createAuth` function
+- [x] remove effect service pattern
+- [x] delete `lib/auth/` folder, move to `lib/auth.ts`
 
 ### 3.4 rpc/errors.ts -> types/errors.ts
 
@@ -654,7 +654,7 @@ packages/shared/src/
 - [ ] delete `rpc/` folder and subfolders
 - [ ] create `routes/` folder
 - [ ] create `types/` folder
-- [ ] merge `lib/auth/` into `lib/auth.ts`
+- [x] merge `lib/auth/` into `lib/auth.ts`
 - [ ] rename `web/lib/rpc.ts` to `web/lib/api.ts`
 
 ---
@@ -670,7 +670,7 @@ packages/shared/src/
 2. [ ] **api package** - rewrite with hono (parallel to existing, test both)
    - [ ] lib/env.ts
    - [x] lib/db.ts
-   - [ ] lib/auth.ts (merge main + make)
+   - [x] lib/auth.ts (merge main + make)
    - [ ] routes/books.ts
    - [ ] routes/repositories.ts
    - [ ] main.ts
@@ -694,7 +694,7 @@ packages/shared/src/
 
 5. [ ] **cleanup** - remove effect dependencies and dead code
    - [ ] delete old rpc/ folder in api
-   - [ ] delete lib/auth/ folder in api
+   - [x] delete lib/auth/ folder in api
    - [ ] remove effect dependencies from package.json files
    - [ ] remove effect catalog from pnpm-workspace.yaml
    - [ ] run pnpm install

@@ -1,11 +1,11 @@
 import { betterAuth } from "better-auth"
-import { type EnvType } from "../env"
+import type { Env } from "./env"
 
-export const makeAuth = (env: EnvType) => {
-  return betterAuth({
+export const createAuth = (env: Env) =>
+  betterAuth({
     secret: env.API_BETTER_AUTH_SECRET,
-    baseURL: env.API_BETTER_AUTH_URL.toString(),
-    trustedOrigins: [env.API_CORS_ORIGIN.origin],
+    baseURL: env.API_BETTER_AUTH_URL,
+    trustedOrigins: [env.API_CORS_ORIGIN],
     socialProviders: {
       github: {
         clientId: env.API_GITHUB_CLIENT_ID,
@@ -13,4 +13,3 @@ export const makeAuth = (env: EnvType) => {
       },
     },
   })
-}
