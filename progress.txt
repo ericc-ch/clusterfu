@@ -125,3 +125,22 @@ Next: Begin working on first task.
   - apps/api/src/types/errors.ts
   - plan.md
   - progress.txt
+
+---
+
+- Tasks completed in this session
+  - Added Hono books routes with zod validation and CRUD handlers
+  - Removed Effect RPC books handler/contract and deleted the rpc/books folder
+  - Checked off books routes and routes folder tasks in plan
+- Decisions made and why
+  - Used `z.coerce.number()` for book id params to accept path strings
+  - Kept list response shape as `{ data }` to match the prior RPC contract
+- Blockers encountered
+  - `pnpm run typecheck` fails due to remaining Effect-era modules and missing Hono dependencies (alchemy.run.ts, apps/api/src/main.ts, apps/api/src/rpc/*)
+  - `pnpm run test` exits with no test files found
+- Files changed
+  - apps/api/src/routes/books.ts
+  - apps/api/src/rpc/books/contract.ts
+  - apps/api/src/rpc/books/handler.ts
+  - plan.md
+  - progress.txt

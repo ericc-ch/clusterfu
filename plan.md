@@ -216,16 +216,16 @@ export class NotFoundError extends Error {
 **current:** effect service + rpc handlers  
 **change to:** hono routes + async functions
 
-- [ ] create `routes/books.ts`
-- [ ] set up hono app with `new Hono<{ Bindings: Env }>()`
-- [ ] create zod schemas for params/body validation
-- [ ] `GET /:id` - get book by id with 404 handling
-- [ ] `GET /` - list all books
-- [ ] `POST /` - create book
-- [ ] `PATCH /:id` - update book with 404 handling
-- [ ] `DELETE /:id` - delete book with 404 handling
-- [ ] export `BooksAppType`
-- [ ] delete old `rpc/books/` folder
+- [x] create `routes/books.ts`
+- [x] set up hono app with `new Hono<{ Bindings: Env }>()`
+- [x] create zod schemas for params/body validation
+- [x] `GET /:id` - get book by id with 404 handling
+- [x] `GET /` - list all books
+- [x] `POST /` - create book
+- [x] `PATCH /:id` - update book with 404 handling
+- [x] `DELETE /:id` - delete book with 404 handling
+- [x] export `BooksAppType`
+- [x] delete old `rpc/books/` folder
 
 ### 3.6 rpc/repositories/handler.ts -> routes/repositories.ts
 
@@ -652,7 +652,7 @@ packages/shared/src/
 
 - [ ] reorganize api folder structure
 - [ ] delete `rpc/` folder and subfolders
-- [ ] create `routes/` folder
+- [x] create `routes/` folder
 - [x] create `types/` folder
 - [x] merge `lib/auth/` into `lib/auth.ts`
 - [ ] rename `web/lib/rpc.ts` to `web/lib/api.ts`
@@ -671,7 +671,7 @@ packages/shared/src/
    - [ ] lib/env.ts
    - [x] lib/db.ts
    - [x] lib/auth.ts (merge main + make)
-   - [ ] routes/books.ts
+   - [x] routes/books.ts
    - [ ] routes/repositories.ts
    - [ ] main.ts
    - [ ] run typecheck
