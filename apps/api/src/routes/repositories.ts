@@ -7,9 +7,9 @@ import {
   repositories as repositoriesTable,
 } from "shared/schema"
 import type { Database } from "../lib/db"
-import type { Env } from "../lib/env"
+import type { ParsedEnv } from "../lib/env"
 
-type Bindings = Env & { DB: D1Database }
+type Bindings = ParsedEnv & { DB: D1Database }
 
 type Variables = {
   db: Database
@@ -20,55 +20,53 @@ const submitSchema = z.object({
 })
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
+  .get("/", async (c) => {
+    const db = c.get("db")
+    const data = await db.select().from(repositoriesTable)
+    return c.json({ data })
+  })
+  .post("/", zValidator("json", submitSchema), async (c) => {
+    const { repoUrl } = c.req.valid("json")
+    const parseResult = parseRepoUrl(repoUrl)
 
-app.get("/", async (c) => {
-  const db = c.get("db")
-  const data = await db.select().from(repositoriesTable)
-  return c.json({ data })
-})
+    if ("error" in parseResult) {
+      return c.json({ error: parseResult.error }, 400)
+    }
 
-app.post("/", zValidator("json", submitSchema), async (c) => {
-  const { repoUrl } = c.req.valid("json")
-  const parseResult = parseRepoUrl(repoUrl)
+    const { fullName } = parseResult
+    const db = c.get("db")
 
-  if ("error" in parseResult) {
-    return c.json({ error: parseResult.error }, 400)
-  }
+    const existing = await db
+      .select()
+      .from(repositoriesTable)
+      .where(eq(repositoriesTable.fullName, fullName))
+      .limit(1)
 
-  const { fullName } = parseResult
-  const db = c.get("db")
+    const existingRepo = existing.at(0)
+    if (existingRepo) {
+      return c.json(existingRepo)
+    }
 
-  const existing = await db
-    .select()
-    .from(repositoriesTable)
-    .where(eq(repositoriesTable.fullName, fullName))
-    .limit(1)
+    const now = Date.now()
+    const inserted = await db
+      .insert(repositoriesTable)
+      .values({
+        fullName,
+        status: "pending",
+        lastSyncAt: 0,
+        errorMessage: null,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning()
 
-  const existingRepo = existing.at(0)
-  if (existingRepo) {
-    return c.json(existingRepo)
-  }
+    const repo = inserted.at(0)
+    if (!repo) {
+      return c.json({ error: "Failed to create repository entry" }, 500)
+    }
 
-  const now = Date.now()
-  const inserted = await db
-    .insert(repositoriesTable)
-    .values({
-      fullName,
-      status: "pending",
-      lastSyncAt: 0,
-      errorMessage: null,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .returning()
-
-  const repo = inserted.at(0)
-  if (!repo) {
-    return c.json({ error: "Failed to create repository entry" }, 500)
-  }
-
-  return c.json(repo, 201)
-})
+    return c.json(repo, 201)
+  })
 
 type ParseResult = { fullName: string } | { error: string }
 
@@ -100,7 +98,5 @@ const validateFullName = (fullName: string): ParseResult => {
   }
   return { fullName: result.data }
 }
-
-export type RepositoriesAppType = typeof app
 
 export default app

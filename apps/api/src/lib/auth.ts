@@ -1,5 +1,4 @@
 import { betterAuth } from "better-auth"
-import type { Env } from "./env"
 
 export const createAuth = (env: Env) =>
   betterAuth({

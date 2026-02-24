@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_layout/")({
     } = useQuery({
       queryKey: ["repositories"],
       queryFn: async () => {
-        const res = await apiClient.repositories.$get()
+        const res = await apiClient.api.repositories.$get()
         if (!res.ok) throw new Error("Failed to fetch repositories")
         const json = (await res.json()) as { data: Repository[] }
         return json.data

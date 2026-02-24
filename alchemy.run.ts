@@ -4,7 +4,7 @@ import { D1Database, Worker, TanStackStart } from "alchemy/cloudflare"
 import { Exec } from "alchemy/os"
 import { config } from "dotenv"
 import { z } from "zod"
-import { parseEnv as parseApiEnv } from "api/env"
+import { envSchema as apiEnvSchema } from "api/env"
 
 config({ path: "./.env" })
 config({ path: "./apps/api/.env" })
@@ -27,7 +27,7 @@ const alchemyEnv = {
   ALCHEMY_REMOTE_STATE: alchemyEnvRaw.ALCHEMY_REMOTE_STATE === "true",
 }
 
-const apiEnv = parseApiEnv(process.env as Record<string, string>)
+const apiEnv = apiEnvSchema.parse(process.env)
 const remoteEnv =
   alchemyEnv.ALCHEMY_REMOTE_STATE ? RemoteEnvSchema.parse(process.env) : null
 
