@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { apiClient } from "@/lib/api"
+import { isValidGitHubRepoUrl } from "@/lib/github-url"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useForm } from "@tanstack/react-form"
 import { createFileRoute, Link } from "@tanstack/react-router"
@@ -11,18 +12,10 @@ const submitSchema = z.object({
   repoUrl: z
     .string()
     .min(1, "Repository URL is required")
-    .refine(
-      (url) => {
-        const githubRegex =
-          /^https:\/\/github\.com\/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+\/?$/
-        const shorthandRegex = /^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+$/
-        return githubRegex.test(url) || shorthandRegex.test(url)
-      },
-      {
-        message:
-          "Enter a valid GitHub repository URL (e.g., https://github.com/owner/repo or owner/repo)",
-      },
-    ),
+    .refine(isValidGitHubRepoUrl, {
+      message:
+        "Enter a valid GitHub repository URL (e.g., https://github.com/owner/repo or owner/repo)",
+    }),
 })
 
 type SubmitFormData = z.infer<typeof submitSchema>
