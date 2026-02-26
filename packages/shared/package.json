@@ -7,6 +7,7 @@
     "./schema": "./src/schema/main.ts"
   },
   "devDependencies": {
+    "drizzle-zod": "^0.8.3",
     "vitest": "catalog:vite"
   },
   "peerDependencies": {

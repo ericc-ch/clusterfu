@@ -10,5 +10,7 @@ export const protectedMiddleware = createMiddleware<HonoContext>(async (c, next)
     return c.json({ error: "Unauthorized" }, 401)
   }
 
+  c.set("session", session)
+
   return await next()
 })

@@ -1,6 +1,5 @@
 import { Hono } from "hono"
 import { cors } from "hono/cors"
-import { octokitMiddleware } from "./middleware/octokit"
 import { createAuth } from "./lib/auth"
 import { createDB } from "./lib/db"
 import type { HonoContext } from "./types"
@@ -22,7 +21,6 @@ const app = new Hono<HonoContext>()
     c.set("auth", createAuth(c.env))
     return await next()
   })
-  .use("*", octokitMiddleware)
   .get("/", (c) => c.text("ok"))
   .on(["POST", "GET"], "/api/auth/*", async (c) => {
     const auth = c.get("auth")

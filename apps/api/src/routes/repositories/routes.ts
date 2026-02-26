@@ -4,6 +4,7 @@ import { Hono } from "hono"
 import { z } from "zod"
 import { parseGitHubRepoUrl, repositories as repositoriesTable } from "shared"
 import { generateEmbeddings, prepIssue, prepPullRequest } from "../../lib/embedding"
+import { getOctokit } from "../../lib/octokit"
 import { protectedMiddleware } from "../../middleware/protected"
 import type { HonoContext } from "../../types"
 import { FETCH_REPO_DATA_QUERY, type GraphQLResponse } from "./queries"
@@ -110,7 +111,6 @@ export const repositoriesRoutes = new Hono<HonoContext>()
       .values({
         owner,
         repo: repoName,
-        status: "pending",
         lastSyncAt: 0,
         errorMessage: null,
         createdAt: now,
@@ -145,20 +145,7 @@ export const repositoriesRoutes = new Hono<HonoContext>()
       return c.json({ error: "Repository not found" }, 404)
     }
 
-    if (repository.status === "syncing" || repository.status === "backfilling") {
-      return c.json({ error: "Sync already in progress" }, 409)
-    }
-
-    const octokit = c.get("octokit")
-    if (!octokit) {
-      return c.json({ error: "No GitHub account linked" }, 400)
-    }
-
-    // Set status to syncing
-    await db
-      .update(repositoriesTable)
-      .set({ status: "syncing", updatedAt: Date.now() })
-      .where(and(eq(repositoriesTable.owner, owner), eq(repositoriesTable.repo, repo)))
+    const octokit = await getOctokit(c)
 
     try {
       const since = repository.lastSyncAt > 0 ? new Date(repository.lastSyncAt).toISOString() : null
@@ -294,11 +281,10 @@ export const repositoriesRoutes = new Hono<HonoContext>()
         httpMetadata: { contentType: "application/gzip" },
       })
 
-      // Update D1 status to active
+      // Update D1 with sync info
       await db
         .update(repositoriesTable)
         .set({
-          status: "active",
           lastSyncAt: Date.now(),
           updatedAt: Date.now(),
           errorMessage: null,
@@ -307,17 +293,14 @@ export const repositoriesRoutes = new Hono<HonoContext>()
 
       return c.json({
         repo: fullRepoName,
-        status: "active",
         lastSyncAt: vectorObject.syncedAt,
         issuesCount: Object.keys(mergedIssues).length,
         pullRequestsCount: Object.keys(mergedPullRequests).length,
       })
     } catch (error) {
-      // Update status to error
       await db
         .update(repositoriesTable)
         .set({
-          status: "error",
           errorMessage: error instanceof Error ? error.message : "Unknown error",
           updatedAt: Date.now(),
         })

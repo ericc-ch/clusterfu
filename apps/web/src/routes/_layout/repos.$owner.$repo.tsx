@@ -86,11 +86,6 @@ function RepoDetailsPage() {
 
         <div className="grid gap-4 rounded-lg border p-4">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Status</span>
-            <span className="capitalize">{repoData.status}</span>
-          </div>
-
-          <div className="flex justify-between">
             <span className="text-muted-foreground">Last synced</span>
             <span>{formatRelativeTime(repoData.lastSyncAt)}</span>
           </div>
