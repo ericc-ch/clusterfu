@@ -21,12 +21,11 @@ This document outlines the system for indexing GitHub repositories, generating t
 **Cloudflare Workers** is the single backend service:
 
 - HTTP endpoints for repository management and manual sync
-- Cron trigger handler for daily scheduled sync
 - All operations run in the same Worker code
 
 ## Worker Architecture
 
-The Worker handles both HTTP requests and scheduled events in a single codebase:
+The Worker handles HTTP requests only (no cron triggers):
 
 ```typescript
 export default {
@@ -37,30 +36,16 @@ export default {
     // POST /api/repos/:owner/:repo/sync - Manual sync ("Index now")
     // etc.
   },
-
-  // Cron trigger (daily at 2 AM)
-  async scheduled(
-    controller: ScheduledController,
-    env: Env,
-    ctx: ExecutionContext,
-  ) {
-    // Query D1 for all active repos
-    // For each repo: run syncRepo(repo)
-  },
 }
 ```
 
-**Shared Functions**:
-
-Both entry points call the same core functions:
+**Core Functions**:
 
 - `backfillRepo(repo)` - Initial backfill (open items only)
-- `syncRepo(repo)` - Daily sync or manual trigger (all items + deletions)
+- `syncRepo(repo)` - Manual sync trigger (all items + deletions)
 - `generateEmbeddings(items)` - Call Gemini API
 - `writeVectorObject(repo, data)` - Write to R2
 - `updateRepoStatus(repo, status)` - Update D1
-
-This ensures consistent behavior whether triggered by cron or by user action.
 
 ## Data Model
 
@@ -82,7 +67,7 @@ repositories
 | --------------- | ---------------------------------------------- | ---------------------------------- |
 | `'pending'`     | Just added, waiting for backfill               | `backfilling`                      |
 | `'backfilling'` | Initial backfill (open items only) in progress | `active` or `error`                |
-| `'syncing'`     | Daily sync or manual "Index now" in progress   | `active` or `error`                |
+| `'syncing'`     | Manual "Index now" in progress                 | `active` or `error`                |
 | `'active'`      | Ready to use, last operation succeeded         | `syncing` (on trigger)             |
 | `'error'`       | Last operation failed, check error_message     | `syncing` (retry) or `backfilling` |
 
@@ -128,11 +113,12 @@ interface PullRequest {
   createdAt: string // ISO 8601 timestamp
   updatedAt: string // ISO 8601 timestamp
   mergedAt: string | null // ISO 8601 timestamp or null
+  hash: string // SHA256 of title+body, for content-change detection
   vector: number[] // 768-dimension embedding
 }
 ```
 
-Objects keyed by ID (not arrays) enable O(1) replacement/deletion. Metadata includes core fields needed for display: number, title, body, state, author, labels, timestamps.
+Objects keyed by ID (not arrays) enable O(1) replacement/deletion. Metadata includes core fields needed for display: number, title, body, state, author, labels, timestamps. PRs store a `hash` field for efficient change detection (see Sync Strategy below).
 
 ### R2 Storage Layout
 
@@ -147,7 +133,7 @@ Examples:
 
 Each file is the **only** vector data for that repository. Format: JSON compressed with gzip. Debuggable (`gunzip | jq`), no extra dependencies.
 
-## Backfill Strategy
+## Sync Strategy
 
 ### Phase 1: Initial Backfill (Open Items Only)
 
@@ -163,27 +149,34 @@ When a repository is first added:
 
 This keeps initial backfill fast by skipping closed/merged history.
 
-### Phase 2: Daily Sync (All Updated Items + Deletion)
+### Phase 2: Manual Sync (Incremental Update + Deletion)
 
-A Scheduled Worker runs once per day:
+When user clicks "Index now":
 
-1. **Query D1** for active repositories where `status='active'`
-2. **Fetch from GitHub API** using `since={last_sync_at}`:
-   - Get ALL issues updated since last sync (state=open and closed)
-   - Get ALL PRs updated since last sync (state=open, closed, merged)
+1. **Query D1** for repository status
+2. **Fetch from GitHub API**:
+   - **Issues**: Use `since={last_sync_at}` (GitHub API supports this)
+     - Get issues updated since last sync
+     - Check state in response:
+       - If `state === "open"` → generate/update embedding
+       - If `state === "closed"` → delete from object
+   - **PRs**: Fetch ALL open PRs (GitHub API doesn't support `since` for PRs)
+     - For each PR, compute hash: `SHA256(title + "\n\n" + body)`
+     - Compare with stored `hash` in R2:
+       - Hash mismatch or new PR → generate embedding, add/update in object
+       - Hash matches → skip embedding (keep existing vector)
+     - Any PR in R2 but not in API response → delete from object (closed/merged)
 3. **Fetch current vector object** from R2 (if exists)
-4. **Merge with deletion logic**:
-   - For each item in API response:
-     - If state is "open" → generate/update embedding, add to object
-     - If state is "closed" or "merged" → delete from object (don't generate embedding)
+4. **Merge with deletion logic** (as described above)
 5. **Write vector object** back to R2 (overwrite)
 6. **Update D1**: Set `status='active'`, `last_sync_at=now()`
 
-**Why this works:**
+**Why this approach:**
 
-- Items that close will be returned by `since=` on next sync
-- We detect closed state and remove them from the vector object
-- Open items continue to accumulate
+- **Issues**: Efficient API calls using `since` filter
+- **PRs**: Content-hash based diffing avoids unnecessary embedding API calls
+- **Both**: Items that close/merge are detected and removed from vector object
+- Open items continue to accumulate, closed items removed
 - No explicit "deleted items" tracking needed
 
 ## Architecture Decisions
@@ -215,32 +208,33 @@ A Scheduled Worker runs once per day:
 **Decision**: Initial backfill only indexes open issues/PRs
 
 - Reduces time to first usable data
-- Closed/merged items removed naturally via daily sync
+- Closed/merged items removed naturally via sync
 - Large repos (10k+ issues) backfill in reasonable time
 
-### 4. Daily Sync: Delete Closed Items
+### 4. Sync: Delete Closed Items
 
-**Decision**: Daily sync fetches all updated items and deletes closed/merged
+**Decision**: Sync fetches updated items and deletes closed/merged
 
-- API returns items regardless of state when using `since=`
-- Check state in response, delete from vector object if closed
+- Issues: API returns items with `since=`, check state
+- PRs: Content hash comparison, items missing from API response are deleted
 - Clean vector set contains only currently open items
 
 ### 5. Sync Failure Handling: Skip and Retry
 
-**Decision**: On failure, skip and retry next day with wider `since` window
+**Decision**: On failure, user can retry manually
 
-- No special failure tracking
-- Next daily run will pick up missed items with larger window
-- No alerting/manual intervention for MVP
+- No automatic retry (no cron)
+- User sees error message and can click "Index now" again
+- Simple for MVP
 
-### 6. Sync Schedule: Daily
+### 6. No Automatic Sync (Manual Only)
 
-**Decision**: Run sync once per day instead of hourly
+**Decision**: No cron triggers, only manual "Index now" button
 
-- Reduces API usage and costs
-- Acceptable latency for this use case
-- Frontend shows "last synced: X hours ago" for transparency
+- Simpler architecture
+- User controls when to refresh data
+- Frontend shows "last synced: X hours ago" to indicate staleness
+- Can add automatic sync later if needed
 
 ### 7. Multiple Vector Versions: Out of Scope
 
@@ -270,33 +264,35 @@ A Scheduled Worker runs once per day:
 
 **Decision**: Frontend can trigger immediate sync via API endpoint
 
-- Same sync logic as daily cron, just different entry point
+- No automatic daily sync
 - Returns immediately (202 Accepted), runs async
 - Prevents duplicate triggers (checks status != 'syncing')
 - Use cases: fresh data on demand, debugging, testing
 
-## Scheduling
+### 11. Content Hashing for PRs
 
-### Daily Sync (Cron Trigger)
+**Decision**: Store SHA256 hash of PR content to detect changes
 
-Cloudflare Workers includes **Cron Triggers** - built-in scheduling without external services.
+- GitHub API doesn't support `since` filtering for PRs
+- Computing hash is fast, avoids unnecessary embedding API calls
+- Only re-generates embeddings when title or body actually changes
+- Hash stored as `hash` field in PullRequest interface
 
-**Configuration**:
+### 12. Hybrid Sync Strategy (Issues vs PRs)
 
-- Schedule: `0 2 * * *` (2 AM UTC daily)
-- Configured in `wrangler.toml` or Cloudflare Dashboard
-- Worker receives `scheduled` event type
+**Decision**: Different sync strategies for issues and PRs
 
-**Behavior**:
+- **Issues**: Use `since` parameter (GitHub API supports it)
+  - Efficient: only fetch recently updated issues
+  - Check state, update or delete accordingly
+- **PRs**: Fetch all open PRs + hash-based diffing
+  - No date filter available in API
+  - Hash comparison determines what needs re-embedding
+  - More API calls but saves embedding costs
 
-- Queries D1 for all repositories with `status='active'`
-- Runs sync process for each (same logic as manual trigger)
-- Updates `status` to 'syncing' at start, 'active' or 'error' on completion
-- Runs sequentially to avoid rate limits
+## Manual Sync ("Index Now" Button)
 
-### Manual Sync ("Index Now" Button)
-
-Frontend can trigger immediate sync without waiting for schedule:
+Frontend can trigger immediate sync:
 
 **Trigger Sync**
 
@@ -306,13 +302,12 @@ Response: { full_name, status: "syncing", last_sync_at }
 Note: Triggers sync immediately, returns immediately (async)
 ```
 
-**Use cases**:
+**Use cases:**
 
 - User wants fresh data now
 - Debugging sync issues
 - Testing after adding new repo
-
-**Implementation note**: Manual sync and daily cron use the **same sync function** - just different entry points.
+- Refreshing stale data (frontend shows "last synced X hours ago")
 
 ## API Contract
 
@@ -371,26 +366,26 @@ Frontend logic:
 3. Else (status='active') fetch `/{owner}/{repo}.json.gz` from R2
 4. Decompress and parse JSON
 5. Render vectors with `syncedAt` timestamp shown
+6. Show "Index now" button + "last synced X hours ago" indicator
 
 ## Data Flow Summary
 
 ```
-Daily Scheduled Sync (Cron Trigger):
-  Worker receives scheduled event →
-    Query D1 for repos with status='active' →
-      For each repo:
-        Run syncRepo(repo) function →
-          Update D1 status='syncing' →
-          Fetch GitHub API (since last_sync_at, all states) →
-          Fetch current vector object from R2 →
-          Merge: update opens, delete closed/merged →
-          Write vector object back to R2 →
-          Update D1 (status='active', last_sync_at=now())
-
 Manual Sync ("Index Now" button):
   Frontend POST /api/repos/:owner/:repo/sync →
     Worker HTTP handler →
-      Run syncRepo(repo) function (same as above) →
+      Run syncRepo(repo) function →
+        Update D1 status='syncing' →
+        Fetch GitHub API:
+          Issues: since=last_sync_at (GitHub API filter)
+          PRs: state=open (all open PRs) →
+        Fetch current vector object from R2 →
+        Compare:
+          Issues: updated since last sync, check state
+          PRs: hash comparison for content changes →
+        Merge: update changed items, delete closed/merged →
+        Write vector object back to R2 →
+        Update D1 (status='active', last_sync_at=now()) →
       Return 202 Accepted immediately
 
 Backfill (on repo add):
@@ -412,6 +407,8 @@ Load page →
         'pending'/'backfilling'/'syncing' → show loading
         'error' → show error message
         'active' → GET vector object from R2 → Render vectors
+      Show "Index now" button + "last synced X hours ago"
+      On "Index now" click → POST /api/repos/:owner/:repo/sync → Show syncing state
 ```
 
 ## Vector Data Structure
@@ -455,6 +452,7 @@ Each repository stores exactly one vector object in R2. This object contains all
       "createdAt": "2024-01-14T09:15:00Z",
       "updatedAt": "2024-01-15T11:45:00Z",
       "mergedAt": null,
+      "hash": "a1b2c3d4e5f6...",
       "vector": [-0.134, 0.567, 0.234, ...]
     }
   }
@@ -490,9 +488,10 @@ Each repository stores exactly one vector object in R2. This object contains all
 
 All Issue fields plus:
 
-| Field      | Type           | Description                  |
-| ---------- | -------------- | ---------------------------- |
-| `mergedAt` | string \| null | ISO 8601 timestamp if merged |
+| Field      | Type           | Description                          |
+| ---------- | -------------- | ------------------------------------ |
+| `mergedAt` | string \| null | ISO 8601 timestamp if merged         |
+| `hash`     | string         | SHA256 hash of content (for diffing) |
 
 ### Embedding Generation
 
@@ -512,6 +511,14 @@ Body:
 3. Truncate to model's max input tokens (Gemini: 8k tokens)
 4. Generate 768-dimension embedding via Gemini API
 5. Store as float32 array
+
+**Content Hashing (for PRs)**:
+
+```
+hash = SHA256(title + "\n\n" + body)
+```
+
+Used to detect if PR content changed since last sync. Only re-generate embedding if hash differs.
 
 **Why 768 dimensions?**
 
@@ -565,16 +572,16 @@ Body:
 - O(1) lookup, update, deletion (no array scanning)
 - Gzip compresses the repeated keys and structure very well
 - Net size difference after gzip: ~2-5%
-- Much faster merge operations during daily sync
+- Much faster merge operations during sync
 
 ### Closed Item Handling
 
 Items are **removed** from the vector object when closed/merged:
 
-1. Daily sync fetches all items updated since last sync
-2. For each item in response:
-   - If `state === "open"` → generate embedding, add/update in object
-   - If `state === "closed"` or `mergedAt !== null` → `delete` from object
+1. Sync fetches items from GitHub API
+2. For each item:
+   - If `state === "open"` (issues) or present in API response (PRs) → keep/update
+   - If `state === "closed"` (issues) or missing from API response (PRs) → delete
 3. Write updated object back to R2
 
 Result: Vector object only contains currently open issues/PRs.
@@ -590,19 +597,24 @@ GitHub API supports 100 items per page maximum.
 - Paginate through all open PRs: `GET /repos/{owner}/{repo}/pulls?state=open&per_page=100&page={n}`
 - Stop when page returns empty
 
-**Daily Sync:**
+**Manual Sync:**
 
-- Use `since={last_sync_at}` parameter (ISO 8601 format)
-- Still paginate if >100 items updated
-- GitHub returns items sorted by updated_at ascending
+- **Issues**: Use `since={last_sync_at}` parameter (ISO 8601 format)
+  - Still paginate if >100 items updated
+  - GitHub returns items sorted by updated_at ascending
+- **PRs**: Fetch all open PRs with `state=open`
+  - Paginate through all open PRs
+  - Compute hash for each PR, compare with stored hash
+  - Only re-embed if hash changed
 
 ## Next Steps
 
 1. ~~Answer open questions~~ ✓ Done
 2. ~~Simplify to single vector object per repo~~ ✓ Done
 3. ~~Define backfill and deletion strategy~~ ✓ Done
-4. Create D1 table schema
-5. Implement backfill worker
-6. Implement daily sync scheduled worker
-7. Implement repository management API endpoints
-8. Build frontend vector fetching and rendering
+4. ~~Define sync strategy with hybrid approach~~ ✓ Done
+5. Create D1 table schema
+6. Implement backfill worker
+7. Implement sync worker with hash-based diffing
+8. Implement repository management API endpoints
+9. Build frontend vector fetching and rendering

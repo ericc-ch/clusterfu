@@ -1,0 +1,8 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+
+  "semi": false,
+  "sortTailwindcss": {},
+
+  "ignorePatterns": ["pnpm-lock.yaml", "migrations/"]
+}
