@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm"
 import { Hono } from "hono"
 import { z } from "zod"
 import { parseGitHubRepoUrl, repositories as repositoriesTable } from "shared"
-import { compressGzip, decompressGzip } from "../../lib/compression"
+import { compress, decompress } from "../../lib/compression"
 import { hashPr } from "../../lib/hash"
 import { generateEmbeddings, prepIssue, prepPullRequest } from "../../lib/embedding"
 import { getOctokit } from "../../lib/octokit"
@@ -125,7 +125,7 @@ export const repositoriesRoutes = new Hono<HonoContext>()
       const existingData = await storage.get(objectKey)
 
       if (existingData) {
-        const decompressed = await decompressGzip(await existingData.arrayBuffer())
+        const decompressed = await decompress(new Uint8Array(await existingData.arrayBuffer()))
         existingVectorObject = JSON.parse(decompressed) as VectorObject
       }
 
@@ -275,7 +275,7 @@ export const repositoriesRoutes = new Hono<HonoContext>()
 
       // Compress and write to R2
       const json = JSON.stringify(vectorObject)
-      const compressed = await compressGzip(json)
+      const compressed = await compress(json)
       await storage.put(objectKey, compressed, {
         httpMetadata: { contentType: "application/gzip" },
       })

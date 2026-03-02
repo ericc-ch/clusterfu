@@ -8,7 +8,7 @@ export async function compress(text: string): Promise<Uint8Array> {
   return new Uint8Array(await new Response(stream).arrayBuffer())
 }
 
-export async function decompress(data: BufferSource): Promise<string> {
-  const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream("gzip"))
+export async function decompress(data: Uint8Array): Promise<string> {
+  const stream = new Blob([data as BlobPart]).stream().pipeThrough(new DecompressionStream("gzip"))
   return new Response(stream).text()
 }
